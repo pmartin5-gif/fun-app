@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUTTFART — for brands who don't give a FUCK</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #87CEEB;
+      cursor: crosshair;
+    }
+
+    /* ── Asset C: full-image background ── */
+    #bg-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      animation: breathe 4s ease-in-out infinite;
+      transform-origin: center center;
+    }
+    #bg-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+    }
+
+    @keyframes breathe {
+      0%   { transform: scale(1);     }
+      50%  { transform: scale(1.005); }
+      100% { transform: scale(1);     }
+    }
+
+    /* ── Center stage ── */
+    #stage {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      pointer-events: none;
+      width: 52vmin;
+      height: 52vmin;
+    }
+
+    /* Asset B: text ring — img cropped to the center circle */
+    #text-ring-wrap {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 50%;
+      -webkit-mask-image: radial-gradient(ellipse 48% 48% at 50% 50%, black 55%, transparent 100%);
+      mask-image:         radial-gradient(ellipse 48% 48% at 50% 50%, black 55%, transparent 100%);
+    }
+    #text-ring-img {
+      position: absolute;
+      /* JS will size & position this to align the image center with the div center */
+    }
+
+    /* Asset A: the butt — smaller circle at the very center */
+    #butt-wrap {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 22vmin;
+      height: 22vmin;
+      pointer-events: all;
+      cursor: crosshair;
+    }
+    #butt-clip {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 50%;
+      -webkit-mask-image: radial-gradient(ellipse 48% 48% at 50% 50%, black 60%, transparent 100%);
+      mask-image:         radial-gradient(ellipse 48% 48% at 50% 50%, black 60%, transparent 100%);
+    }
+    #butt-img {
+      position: absolute;
+      /* JS will size & position this */
+    }
+
+    /* ── Fart particles ── */
+    .fart {
+      position: fixed;
+      pointer-events: none;
+      z-index: 999;
+      font-size: 2rem;
+      line-height: 1;
+      animation: fart-fly 0.55s steps(4, end) forwards;
+      transform-origin: center center;
+      user-select: none;
+    }
+    @keyframes fart-fly {
+      0%   { opacity: 1;   transform: translate(0,0)                         scale(0.6) rotate(0deg);   }
+      30%  { opacity: 1;   transform: translate(var(--tx1), var(--ty1))      scale(1.1) rotate(15deg);  }
+      60%  { opacity: 0.7; transform: translate(var(--tx2), var(--ty2))      scale(1.4) rotate(-10deg); }
+      100% { opacity: 0;   transform: translate(var(--tx3), var(--ty3))      scale(1.8) rotate(25deg);  }
+    }
+
+    .toot-label {
+      position: fixed;
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #8B4513;
+      text-shadow: 2px 2px 0 #FFD700, -1px -1px 0 #000;
+      pointer-events: none;
+      z-index: 9999;
+      animation: fart-fly 0.5s steps(3, end) forwards;
+      transform-origin: center bottom;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Asset C: Background -->
+  <div id="bg-wrap">
+    <img id="bg-img" src="buttfart.jpg" alt="">
+  </div>
+
+  <!-- Assets B + A: text ring + butt, centered -->
+  <div id="stage">
+    <div id="text-ring-wrap">
+      <img id="text-ring-img" src="BF Camera Ready.jpg" alt="">
+    </div>
+    <div id="butt-wrap">
+      <div id="butt-clip">
+        <img id="butt-img" src="BF Camera Ready.jpg" alt="">
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ── Size the clipped images so they align with the full background ─────────
+  // We wait for the image to load so we know its natural dimensions.
+  const bgImg = document.getElementById('bg-img');
+
+  function alignSprites() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const naturalW = bgImg.naturalWidth  || vw;
+    const naturalH = bgImg.naturalHeight || vh;
+
+    // Same cover calculation the browser uses for object-fit:cover
+    const scaleX = vw / naturalW;
+    const scaleY = vh / naturalH;
+    const scale  = Math.max(scaleX, scaleY);
+    const rendW  = naturalW * scale;
+    const rendH  = naturalH * scale;
+    const offX   = (vw - rendW) / 2;
+    const offY   = (vh - rendH) / 2;
+
+    // ── text-ring sprite ─────────────────────────────────────────────────────
+    const ring     = document.getElementById('text-ring-wrap');
+    const ringRect = ring.getBoundingClientRect();
+    // Position the img so the rendered image center aligns with this element's center
+    const ringImg  = document.getElementById('text-ring-img');
+    ringImg.style.width  = rendW + 'px';
+    ringImg.style.height = rendH + 'px';
+    ringImg.style.left   = (offX - ringRect.left) + 'px';
+    ringImg.style.top    = (offY - ringRect.top)  + 'px';
+
+    // ── butt sprite ──────────────────────────────────────────────────────────
+    const buttWrap = document.getElementById('butt-wrap');
+    const buttRect = buttWrap.getBoundingClientRect();
+    const buttImg  = document.getElementById('butt-img');
+    buttImg.style.width  = rendW + 'px';
+    buttImg.style.height = rendH + 'px';
+    buttImg.style.left   = (offX - buttRect.left) + 'px';
+    buttImg.style.top    = (offY - buttRect.top)  + 'px';
+  }
+
+  bgImg.addEventListener('load', alignSprites);
+  window.addEventListener('resize', alignSprites);
+  // Run immediately in case image is already cached
+  if (bgImg.complete) alignSprites();
+
+  // ── Cursor tracking → butt rotation ───────────────────────────────────────
+  const buttWrap = document.getElementById('butt-wrap');
+
+  document.addEventListener('mousemove', (e) => {
+    const rect  = buttWrap.getBoundingClientRect();
+    const cx    = rect.left + rect.width  / 2;
+    const cy    = rect.top  + rect.height / 2;
+    const angle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+    buttWrap.style.transform = `translate(-50%, -50%) rotate(${angle + 90}deg)`;
+    // Re-align the sprite after rotating (center doesn't move, just update)
+    alignSprites();
+  });
+
+  // ── Click-to-fart ─────────────────────────────────────────────────────────
+  const FART_GLYPHS = ['💨', '☁️', '🌫️', '💭', '〰️'];
+  const TOOT_WORDS  = ['TOOT!', 'PRRT!', 'BRAP!', 'PFFT!'];
+
+  document.addEventListener('click', (e) => {
+    const rect   = buttWrap.getBoundingClientRect();
+    const startX = rect.left + rect.width  / 2;
+    const startY = rect.top  + rect.height / 2;
+    const dx     = e.clientX - startX;
+    const dy     = e.clientY - startY;
+    const dist   = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ux     = dx / dist;
+    const uy     = dy / dist;
+    const count  = 3 + Math.floor(Math.random() * 3);
+
+    for (let i = 0; i < count; i++) {
+      const el    = document.createElement('div');
+      el.className = 'fart';
+      el.textContent = FART_GLYPHS[Math.floor(Math.random() * FART_GLYPHS.length)];
+
+      const spread = (Math.random() - 0.5) * 0.6;
+      const sx     = ux + spread;
+      const sy     = uy + spread;
+      const speed  = 60 + Math.random() * 80;
+
+      el.style.left = startX + 'px';
+      el.style.top  = startY + 'px';
+      el.style.setProperty('--tx1', (sx * speed * 0.3)  + 'px');
+      el.style.setProperty('--ty1', (sy * speed * 0.3)  + 'px');
+      el.style.setProperty('--tx2', (sx * speed * 0.65) + 'px');
+      el.style.setProperty('--ty2', (sy * speed * 0.65) + 'px');
+      el.style.setProperty('--tx3', (sx * speed)        + 'px');
+      el.style.setProperty('--ty3', (sy * speed)        + 'px');
+      el.style.animationDelay = (i * 60) + 'ms';
+      el.style.fontSize = (1.5 + Math.random()) + 'rem';
+
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+
+    // Word flash at click point
+    const label = document.createElement('div');
+    label.className = 'toot-label';
+    label.textContent = TOOT_WORDS[Math.floor(Math.random() * TOOT_WORDS.length)];
+    label.style.left = e.clientX + 'px';
+    label.style.top  = (e.clientY - 20) + 'px';
+    label.style.setProperty('--tx1', (dx * 0.2) + 'px');
+    label.style.setProperty('--ty1', (dy * 0.2 - 15) + 'px');
+    label.style.setProperty('--tx2', (dx * 0.4) + 'px');
+    label.style.setProperty('--ty2', (dy * 0.4 - 30) + 'px');
+    label.style.setProperty('--tx3', (dx * 0.6) + 'px');
+    label.style.setProperty('--ty3', (dy * 0.6 - 50) + 'px');
+    document.body.appendChild(label);
+    label.addEventListener('animationend', () => label.remove());
+  });
+</script>
+</body>
+</html>
